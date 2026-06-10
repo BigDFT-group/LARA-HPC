@@ -35,6 +35,8 @@ Run tests from XML:
 uv run laraq test --config laraq.toml tests/bigdft_tests.xml
 ```
 
+Note that these tests are not intended to all pass. They test the quality of the docs, need for extra loops during validation, etc. You can play with the parameters and docs to improve agent performance. 
+
 ## MCP Server
 
 laraq can be used as an MCP server, exposing the pipeline as composable tools for Claude or other MCP clients.
