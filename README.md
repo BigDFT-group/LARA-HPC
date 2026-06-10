@@ -108,18 +108,15 @@ Execution is determined by the `template` setting. `bigdft_remote` submits the v
 
 ## Configuration
 
-Create a `laraq.toml`. Ready-to-fill examples for all supported providers (Ollama, OpenAI-compatible, Anthropic, Google) are in `config/`.
+Create a `laraq.toml` by copying one of the ready-to-fill examples in `config/` for your provider (Ollama, OpenAI-compatible, Anthropic, or Google). The config has two main sections: the AI provider setup and the execution target.
 
-| Field | Default | Description |
-|-------|---------|-------------|
-| `template` | `bigdft_remote` | `bigdft_remote` — submit via remotemanager (requires `[remote]`); `bigdft_local` — run in-process |
-| `max_retries` | `1` | Retry budget for the research → code → validate → dry run cycle |
+The `[agent]` section selects an `llm_provider` and an `embedding_provider`. These can be different — for example, Anthropic does not supply embeddings, so you would pair it with OpenAI or Google for that role. Each provider needs its own configuration section with credentials and model names.
 
-Set `llm_provider` and `embedding_provider` in `[agent]` to select a provider, then add the matching provider section. Note that Anthropic does not supply embeddings, so a second provider is needed for those.
+The top-level `template` field controls how generated code is executed. Set it to `bigdft_local` for in-process execution during development, or `bigdft_remote` to submit jobs to an HPC cluster via remotemanager. `max_retries` controls how many times the pipeline will retry the research → code → validate → dry run cycle on failure (default: 1).
 
-Phase 1 agents can be assigned lighter models to save cost via `[agents.intent_extractor_config]`, `[agents.physics_params_config]`, and `[agents.module_mapper_config]`. RAG retrieval depth is controlled via `[agents.research_config]` (`top_k`, `num_search_terms`).
+Phase 1 agents (intent extraction, physics parameters, module mapping) can each be assigned a different model to balance cost and quality. RAG retrieval depth is tunable via `top_k` and `num_search_terms` in the research config. See the example configs for the full set of options.
 
-For remote HPC execution, set `template = "bigdft_remote"` and add a `[remote]` section:
+For remote HPC execution, add a `[remote]` section with at least a `host` (the SSH hostname). You can inline a job script template directly in the config or point to a `.sh` file. Template placeholders use `#name#` syntax and their values can be set in the same section — for example, `nodes = 2` fills `#nodes#` in the template. When using the MCP server, these placeholders become named parameters on the execute tool, so the agent can override them at runtime. Any extra fields (like `ssh_insert`) are passed through to remotemanager. Remote execution requires passwordless SSH access to the target machine.
 
 ```toml
 [remote]
@@ -127,10 +124,11 @@ host = "login.hpc.example.com"
 user = "myuser"                  # optional, defaults to current user
 remote_dir = "/scratch/myuser"   # optional
 submitter = "sbatch"             # optional, for job schedulers
+cpus = 8
 template = """
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=8
+#SBATCH --ntasks-per-node=#CPUS#
 #SBATCH --time=01:00:00
 #SBATCH --account=myproject
 
@@ -138,7 +136,7 @@ module load python/3.11
 """
 ```
 
-`host` is required. `template` accepts an inline script or a path to a `.sh` file; if omitted, laraq supplies a minimal default. Remote execution requires passwordless SSH access to the target machine.
+Remote execution requires passwordless SSH access to the target machine.
 
 ## Test Format
 
@@ -161,15 +159,3 @@ def f():
 </test>
 ```
 
-## Docker
-
-A pre-built container is available on Docker Hub with Ollama and the required models (`gpt-oss:20b` for LLM, `qwen3-embedding` for embeddings) already baked in. Use `config/ollama.toml` as your config.
-
-```bash
-docker pull wddawson/laraq:latest
-docker run -d -p 11434:11434 -v $(pwd):/app --name laraq wddawson/laraq:latest
-docker exec -it laraq laraq run --config config/ollama.toml "Your query here"
-docker exec -it laraq laraq test --config config/ollama.toml tests/bigdft_tests.xml
-```
-
-The container starts Ollama automatically on boot. laraq itself is installed from the mounted volume at runtime, so code changes take effect without rebuilding the image.
