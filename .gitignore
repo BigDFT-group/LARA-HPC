@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+
+# Local config (user-specific)
+laraq.toml
+.mcp.json
+
+# Logs
+lara_chat.log
+*.log
+BigDFT_log.yaml
+
+# RAG embedding cache
+docs/.cache/
+
+# remotemanager runtime artifacts
+dataset-*.yaml
+laraq_local/
+laraq_remote/
+uv.lock
+
+# BigDFT runtime files
+data-*/
+log-*.yaml
+time-*.yaml
+forces_*.xyz
+final_*

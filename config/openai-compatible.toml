@@ -1,0 +1,30 @@
+# OpenAI-Compatible Configuration
+# For OpenAI or any OpenAI-compatible API (e.g., Azure OpenAI, local inference servers)
+
+# bigdft_local:  runs in-process, no [remote] needed — good for testing
+# bigdft_remote: submits via remotemanager, requires a [remote] section
+template = "bigdft_local"
+max_retries = 1
+
+[agent]
+llm_provider = "openai-compatible"
+embedding_provider = "openai-compatible"
+
+[openai_compatible]
+base_url = "https://api.openai.com/v1"
+api_key = "sk-..."
+model = "gpt-4o"
+embedding_model = "text-embedding-3-small"
+
+# RAG research configuration
+[agents.research_config]
+top_k = 3
+num_search_terms = 3
+
+# Phase 1 agents run automatically. Use model overrides to assign lighter/heavier
+# models per stage. Example:
+# [agents.intent_extractor_config]
+# model = "gpt-4o-mini"
+#
+# [agents.module_mapper_config]
+# model = "gpt-4o-mini"

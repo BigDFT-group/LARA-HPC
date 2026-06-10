@@ -1,0 +1,28 @@
+# Google Gemini Configuration
+
+# bigdft_local:  runs in-process, no [remote] needed — good for testing
+# bigdft_remote: submits via remotemanager, requires a [remote] section
+template = "bigdft_local"
+max_retries = 1
+
+[agent]
+llm_provider = "google"
+embedding_provider = "google"
+
+[google]
+api_key = "your-google-api-key-here"
+model = "gemini-2.5-pro"
+embedding_model = "gemini-embedding-2"
+
+# RAG research configuration
+[agents.research_config]
+top_k = 3
+num_search_terms = 3
+
+# Phase 1 agents run automatically. Use model overrides to assign lighter/heavier
+# models per stage. Example:
+# [agents.intent_extractor_config]
+# model = "gemini-2.5-flash"
+#
+# [agents.module_mapper_config]
+# model = "gemini-2.5-flash"

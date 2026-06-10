@@ -1,0 +1,28 @@
+# Local Ollama configuration
+
+# bigdft_local:  runs in-process, no [remote] needed — good for testing
+# bigdft_remote: submits via remotemanager, requires a [remote] section
+template = "bigdft_local"
+max_retries = 1
+
+[agent]
+llm_provider = "ollama"
+embedding_provider = "ollama"
+
+[ollama]
+base_url = "http://localhost:11434"
+model = "gpt-oss:20b"
+embedding_model = "qwen3-embedding"
+
+# RAG research configuration
+[agents.research_config]
+top_k = 3
+num_search_terms = 3
+
+# Phase 1 agents run automatically. Use model overrides to assign lighter/heavier
+# models per stage. Example:
+# [agents.intent_extractor_config]
+# model = "qwen3:8b"
+#
+# [agents.module_mapper_config]
+# model = "qwen3:8b"

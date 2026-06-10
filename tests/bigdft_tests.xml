@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tests>
+  <test name="helium_atom_unit_conversion">
+    <description>Test creating a helium atom in bohr and converting to angstroem</description>
+    <query>Create a helium atom at position [2.0, 0.0, 0.0] in bohr and get its position in angstroem</query>
+
+    <expected_code><![CDATA[
+def f():
+    from BigDFT.Atoms import Atom
+    atom = Atom({'r': [2.0, 0.0, 0.0], 'sym': 'He', 'units': 'bohr'})
+    pos_angstroem = atom.get_position('angstroem')
+    return pos_angstroem
+]]></expected_code>
+
+    <expected_output type="list">
+      <item type="float">1.05835442184</item>
+      <item type="float">0.0</item>
+      <item type="float">0.0</item>
+    </expected_output>
+
+    <tolerance>1e-6</tolerance>
+  </test>
+
+  <test name="carbon_atom_properties">
+    <description>Test accessing atomic properties</description>
+    <query>Create a carbon atom and return its atomic number and weight as a tuple</query>
+
+    <expected_code><![CDATA[
+def f():
+    from BigDFT.Atoms import Atom
+    carbon = Atom(C=[0.0, 0.0, 0.0], units='bohr')
+    return (carbon.atomic_number, carbon.atomic_weight)
+]]></expected_code>
+
+    <expected_output type="tuple">
+      <item type="int">6</item>
+      <item type="float">12.0107</item>
+    </expected_output>
+
+    <tolerance>1e-6</tolerance>
+  </test>
+
+  <test name="fragment_centroid">
+    <description>Test creating a fragment and computing its centroid</description>
+    <query>Create a fragment with two hydrogen atoms at positions [0.0, 0.0, 0.0] and [2.0, 0.0, 0.0] in bohr, then return the centroid</query>
+
+    <expected_code><![CDATA[
+def f():
+    from BigDFT.Atoms import Atom
+    from BigDFT.Fragments import Fragment
+    atoms = [
+        Atom({'r': [0.0, 0.0, 0.0], 'sym': 'H', 'units': 'bohr'}),
+        Atom({'r': [2.0, 0.0, 0.0], 'sym': 'H', 'units': 'bohr'})
+    ]
+    frag = Fragment(atomlist=atoms)
+    return frag.centroid
+]]></expected_code>
+
+    <expected_output type="list">
+      <item type="float">1.0</item>
+      <item type="float">0.0</item>
+      <item type="float">0.0</item>
+    </expected_output>
+
+    <tolerance>1e-6</tolerance>
+  </test>
+
+  <test name="fragment_length_and_valence">
+    <description>Test fragment length and total valence electrons</description>
+    <query>Create a fragment with three atoms (C, H, H) and return the number of atoms and total valence electrons as a tuple</query>
+
+    <expected_code><![CDATA[
+def f():
+    from BigDFT.Atoms import Atom
+    from BigDFT.Fragments import Fragment
+    atoms = [
+        Atom({'r': [0.0, 0.0, 0.0], 'sym': 'C', 'units': 'bohr'}),
+        Atom({'r': [1.0, 0.0, 0.0], 'sym': 'H', 'units': 'bohr'}),
+        Atom({'r': [0.0, 1.0, 0.0], 'sym': 'H', 'units': 'bohr'})
+    ]
+    frag = Fragment(atomlist=atoms)
+    return (len(frag), frag.nel)
+]]></expected_code>
+
+    <expected_output type="tuple">
+      <item type="int">3</item>
+      <item type="int">6</item>
+    </expected_output>
+
+    <tolerance>1e-6</tolerance>
+  </test>
+
+  <test name="system_fragment_count">
+    <description>Test creating a system with multiple fragments</description>
+    <query>Create a system with two fragments named MOL1 and MOL2, where MOL1 has 2 hydrogen atoms and MOL2 has 1 carbon atom, then return the number of fragments in the system</query>
+
+    <expected_code><![CDATA[
+def f():
+    from BigDFT.Atoms import Atom
+    from BigDFT.Fragments import Fragment
+    from BigDFT.Systems import System
+
+    frag1 = Fragment(atomlist=[
+        Atom({'r': [0.0, 0.0, 0.0], 'sym': 'H', 'units': 'bohr'}),
+        Atom({'r': [1.0, 0.0, 0.0], 'sym': 'H', 'units': 'bohr'})
+    ])
+
+    frag2 = Fragment(atomlist=[
+        Atom({'r': [5.0, 0.0, 0.0], 'sym': 'C', 'units': 'bohr'})
+    ])
+
+    sys = System({'MOL1': frag1, 'MOL2': frag2})
+    return len(sys)
+]]></expected_code>
+
+    <expected_output type="int">2</expected_output>
+
+    <tolerance>1e-6</tolerance>
+  </test>
+
+  <test name="system_total_atoms">
+    <description>Test counting total atoms across all fragments in a system</description>
+    <query>Create a system with two fragments where the first has 2 atoms and the second has 3 atoms, then count the total number of atoms in the entire system</query>
+
+    <expected_code><![CDATA[
+def f():
+    from BigDFT.Atoms import Atom
+    from BigDFT.Fragments import Fragment
+    from BigDFT.Systems import System
+
+    frag1 = Fragment(atomlist=[
+        Atom({'r': [0.0, 0.0, 0.0], 'sym': 'H', 'units': 'bohr'}),
+        Atom({'r': [1.0, 0.0, 0.0], 'sym': 'H', 'units': 'bohr'})
+    ])
+
+    frag2 = Fragment(atomlist=[
+        Atom({'r': [5.0, 0.0, 0.0], 'sym': 'C', 'units': 'bohr'}),
+        Atom({'r': [6.0, 0.0, 0.0], 'sym': 'O', 'units': 'bohr'}),
+        Atom({'r': [7.0, 0.0, 0.0], 'sym': 'N', 'units': 'bohr'})
+    ])
+
+    sys = System({'MOL1': frag1, 'MOL2': frag2})
+
+    total_atoms = sum(len(frag) for frag in sys.values())
+    return total_atoms
+]]></expected_code>
+
+    <expected_output type="int">5</expected_output>
+
+    <tolerance>1e-6</tolerance>
+  </test>
+
+  <test name="inputfile_basic_setup">
+    <description>Test creating an inputfile and setting basic DFT parameters</description>
+    <query>Create an Inputfile, set hgrids to 0.35 and XC functional to PBE, then return the hgrids value</query>
+
+    <expected_code><![CDATA[
+def f():
+    from BigDFT.Inputfiles import Inputfile
+
+    inp = Inputfile()
+    inp.set_hgrid(0.35)
+    inp.set_xc('PBE')
+
+    return inp['dft']['hgrids']
+]]></expected_code>
+
+    <expected_output type="float">0.35</expected_output>
+
+    <tolerance>1e-6</tolerance>
+  </test>
+
+  <test name="inputfile_dict_access">
+    <description>Test creating inputfile from dictionary and accessing values</description>
+    <query>Create an Inputfile from a dictionary with dft hgrids 0.4 and ixc LDA, then return both values as a tuple</query>
+
+    <expected_code><![CDATA[
+def f():
+    from BigDFT.Inputfiles import Inputfile
+
+    input_dict = {
+        'dft': {
+            'hgrids': 0.4,
+            'ixc': 'LDA'
+        }
+    }
+    inp = Inputfile(input_dict)
+
+    return (inp['dft']['hgrids'], inp['dft']['ixc'])
+]]></expected_code>
+
+    <expected_output type="tuple">
+      <item type="float">0.4</item>
+      <item type="str">LDA</item>
+    </expected_output>
+
+    <tolerance>1e-6</tolerance>
+  </test>
+  <test name="systemcalculator_h2_dryrun">
+    <description>Test running a SystemCalculator dry run for H2 molecule</description>
+    <query>Create an H2 molecule with atoms at [0,0,0] and [1.5,0,0] in bohr, set up an input with the LDA functional, then run a calculation with SystemCalculator and return the energy</query>
+
+    <expected_code><![CDATA[
+def f():
+    from BigDFT.Calculators import SystemCalculator
+    from BigDFT.Inputfiles import Inputfile
+    from BigDFT.Systems import System
+    from BigDFT.Fragments import Fragment
+    from BigDFT.Atoms import Atom
+
+    # Create H2 system
+    atoms = [
+        Atom({'r': [0.0, 0.0, 0.0], 'sym': 'H', 'units': 'bohr'}),
+        Atom({'r': [1.5, 0.0, 0.0], 'sym': 'H', 'units': 'bohr'})
+    ]
+    frag = Fragment(atomlist=atoms)
+    sys = System({'H:2': frag})
+
+    # Create input
+    inp = Inputfile()
+    inp.set_xc('LDA')
+
+    # Run dry run calculation
+    calc = SystemCalculator()
+    log = calc.run(name='h2_test', input=inp, sys=sys)
+
+    # Return energy
+    return log.energy
+]]></expected_code>
+
+    <expected_output type="float">-1.13633282904544908E+00</expected_output>
+
+    <tolerance>1e-6</tolerance>
+  </test>
+</tests>

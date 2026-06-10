@@ -1,0 +1,36 @@
+# Anthropic Configuration
+# Note: Anthropic doesn't provide embeddings, so use another provider for those.
+
+# bigdft_local:  runs in-process, no [remote] needed — good for testing
+# bigdft_remote: submits via remotemanager, requires a [remote] section
+template = "bigdft_local"
+max_retries = 1
+
+[agent]
+llm_provider = "anthropic"
+embedding_provider = "openai-compatible"
+
+[anthropic]
+api_key = "sk-ant-..."
+model = "claude-sonnet-4-6"
+
+[openai_compatible]
+base_url = "https://api.openai.com/v1"
+api_key = "sk-..."
+embedding_model = "text-embedding-3-small"
+
+# RAG research configuration
+[agents.research_config]
+top_k = 3
+num_search_terms = 3
+
+# Phase 1 agents run automatically. Use model overrides to assign lighter/heavier
+# models per stage. Example:
+# [agents.intent_extractor_config]
+# model = "claude-haiku-4-5-20251001"
+#
+# [agents.physics_params_config]
+# model = "claude-opus-4-7"
+#
+# [agents.module_mapper_config]
+# model = "claude-haiku-4-5-20251001"
